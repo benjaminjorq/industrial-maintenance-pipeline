@@ -8,48 +8,81 @@ industrial-maintenance-pipeline/
 │       └── ci.yml                     # Pipeline de Integración Continua (Próximamente)
 │
 ├── backfill/
-│   └── trigger_backfilling.py         # Reprocesamiento de datos históricos
+│   └── trigger_backfilling.py         # Ejecuta cargas históricas para reprocesar fechas específicas
 │
-├── data/                              # Datos temporales para desarrollo local (Ignorado por Git)
-│   ├── bronze/                        # Capa Bronze (CSV)
-│   └── silver/                        # Capa Silver (Parquet)
+├── data/                              # Almacenamiento temporal utilizado durante el desarrollo local (Ignorado por Git)
+│   ├── bronze/                        # Datos extraídos sin transformaciones (Formato CSV)
+│   │   ├── plants/
+│   │   │   └── ingestion_date=YYYY-MM-DD/
+│   │   │       └── plants_YYYY-MM-DD.csv
+│   │   ├── machines/
+│   │   ├── production_orders/
+│   │   ├── production_yields/
+│   │   └── ...
+│   │
+│   └── silver/                        # Datos limpios y estandarizados en formato columnar Parquet
+│       ├── plants/
+│       │   └── ingestion_date=YYYY-MM-DD/
+│       │       └── plants_YYYY-MM-DD.parquet
+│       ├── machines/
+│       ├── production_orders/
+│       ├── production_yields/
+│       └── ...
 │
-├── docs/                              # Diagramas y documentación del proyecto
+├── docs/                              # Diagramas de arquitectura, modelo de datos y documentación técnica (Proximamente)
+│   ├── architecture.png
+│   ├── pipeline_flow.png
+│   ├── data_model.png
+│   └── ...
 │
 ├── sql/
-│   ├── *.sql                          # Consultas de extracción desde PostgreSQL
-│   └── gold/
-│       └── *.sql                      # Modelos analíticos de la capa Gold
+│   ├── plants.sql                     # Consultas SQL utilizadas para extraer datos desde PostgreSQL
+│   ├── machines.sql
+│   ├── products.sql
+│   ├── production_orders.sql
+│   ├── production_yields.sql
+│   └── ...
 │
-├── src/                               # Código fuente del pipeline
+│   └── gold/
+│       ├── gold_daily_production.sql  # Modelos analíticos que generan tablas para reportería
+│       ├── gold_machine_downtime.sql
+│       ├── gold_plant_performance.sql
+│       └── ...
+│
+├── src/                               # Código fuente organizado según las etapas del pipeline ETL
 │   ├── config/
-│   │   └── settings.py                # Variables de entorno y configuración
+│   │   └── settings.py                # Gestión de variables de entorno y configuración del proyecto
 │   │
 │   ├── database/
-│   │   └── connection.py              # Conexión a PostgreSQL
+│   │   └── connection.py              # Crea y administra la conexión hacia PostgreSQL
 │   │
 │   ├── extractors/
-│   │   └── postgres_extractor.py      # Extracción de datos hacia Bronze
+│   │   ├── __init__.py
+│   │   └── postgres_extractor.py      # Extrae datos desde PostgreSQL y los almacena en Bronze
 │   │
 │   ├── transform/
-│   │   ├── data_cleaning_functions.py # Funciones de transformación y limpieza
-│   │   └── transformer.py             # Proceso Bronze → Silver
+│   │   ├── __init__.py
+│   │   ├── data_cleaning_functions.py # Reglas reutilizables de limpieza y estandarización de datos
+│   │   └── transformer.py             # Orquesta la transformación de Bronze hacia Silver
 │   │
 │   ├── load/
-│   │   ├── bigquery_loader.py         # Carga de Silver hacia BigQuery
-│   │   └── gold_loader.py             # Construcción de la capa Gold
+│   │   ├── bigquery_loader.py         # Carga archivos Parquet desde Silver hacia BigQuery
+│   │   └── gold_loader.py             # Ejecuta los modelos SQL que construyen la capa Gold
 │   │
-│   └── validations/                   # Validaciones de calidad (Próximamente)
+│   └── validations/                   # Validaciones de calidad de datos y esquemas (Próximamente)
 │
-├── tests/                             # Pruebas unitarias y de integración (Próximamente)
+├── tests/                             # Pruebas unitarias e integración con pytest (Próximamente)
+│   ├── test_transformer.py
+│   ├── test_data_cleaning.py
+│   └── ...
 │
 ├── utils/
-│   └── gcs_uploader.py                # Utilidades para Cloud Storage
+│   └── gcs_uploader.py                # Funciones auxiliares para interactuar con Google Cloud Storage
 │
-├── .env.example                       # Plantilla de variables de entorno
-├── .gitignore                         # Archivos ignorados por Git
-├── LICENSE                            # Licencia del proyecto
-├── README.md                          # Documentación principal
-├── requirements.txt                   # Dependencias del proyecto
-└── main.py                            # Orquestador principal del pipeline
+├── .env.example                       # Plantilla de variables de entorno requerida para ejecutar el proyecto
+├── .gitignore                         # Exclusión de archivos temporales, credenciales y datos locales
+├── LICENSE                            # Licencia de distribución del proyecto
+├── README.md                          # Documentación principal y guía de uso
+├── requirements.txt                   # Dependencias de Python necesarias para el pipeline
+└── main.py                            # Punto de entrada que orquesta la ejecución completa del pipeline
 ```
