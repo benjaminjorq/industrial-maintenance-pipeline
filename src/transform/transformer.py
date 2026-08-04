@@ -16,53 +16,53 @@ logger = logging.getLogger(__name__)
 # 2. Si necesitas limpiar una tabla completamente nueva, crea una nueva función 'apply_nueva_tabla_rules'
 #    y luego regístrala dentro de 'BUSINESS_RULES_MAP' usando el nombre exacto de la tabla.
 
-def apply_plants_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_plants_table(df: pd.DataFrame) -> pd.DataFrame:
     df = clean_spaces(df, "plant_name")
     df = clean_spaces(df, "region")
     return convert_to_title_case(df, "region")
 
-def apply_product_categories_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_product_categories_table(df: pd.DataFrame) -> pd.DataFrame:
     df = clean_spaces(df, "category_name")
     return convert_to_title_case(df, "category_name")
 
-def apply_suppliers_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_suppliers_table(df: pd.DataFrame) -> pd.DataFrame:
     df = clean_spaces(df, "supplier_name")
     df = clean_spaces(df, "country")
     return convert_to_title_case(df, "country")
 
-def apply_machines_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_machines_table(df: pd.DataFrame) -> pd.DataFrame:
     return convert_to_uppercase(df, "status")
 
-def apply_raw_materials_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_raw_materials_table(df: pd.DataFrame) -> pd.DataFrame:
     df = clean_spaces(df, "unit_of_measure")
     return convert_to_lowercase(df, "unit_of_measure")
 
-def apply_products_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_products_table(df: pd.DataFrame) -> pd.DataFrame:
     df = fix_negative_numbers(df, "standard_cost")
     return invalidate_zero_costs(df, "standard_cost")
 
-def apply_production_orders_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_production_orders_table(df: pd.DataFrame) -> pd.DataFrame:
     df = convert_to_uppercase(df, "status")
     return set_missing_dates_to_null(df, "actual_start_date")
 
-def apply_production_yields_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_production_yields_table(df: pd.DataFrame) -> pd.DataFrame:
     return fix_negative_numbers(df, "scrap_quantity")
 
-def apply_downtime_events_rules(df: pd.DataFrame) -> pd.DataFrame:
+def clean_downtime_events_table(df: pd.DataFrame) -> pd.DataFrame:
     return fix_inverted_dates(df, "start_timestamp", "end_timestamp")
 
 # Diccionario de enrutamiento que conecta cada tabla con sus respectivas reglas de limpieza.
 
 BUSINESS_RULES_MAP = {
-    "plants": apply_plants_rules,
-    "product_categories": apply_product_categories_rules,
-    "suppliers": apply_suppliers_rules,
-    "machines": apply_machines_rules,
-    "raw_materials": apply_raw_materials_rules,
-    "products": apply_products_rules,
-    "production_orders": apply_production_orders_rules,
-    "production_yields": apply_production_yields_rules,
-    "downtime_events": apply_downtime_events_rules
+    "plants": clean_plants_table,
+    "product_categories": clean_product_categories_table,
+    "suppliers": clean_suppliers_table,
+    "machines": clean_machines_table,
+    "raw_materials": clean_raw_materials_table,
+    "products": clean_products_table,
+    "production_orders": clean_production_orders_table,
+    "production_yields": clean_production_yields_table,
+    "downtime_events": clean_downtime_events_table
 }
 
 def clean_data(df: pd.DataFrame, table_name: str) -> pd.DataFrame:
