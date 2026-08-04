@@ -1,0 +1,41 @@
+name: Pipeline de Integración Continua
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    env:
+      DB_HOST: "localhost"
+      DB_PORT: "5432"
+      DB_NAME: "test_db"
+      DB_USER: "test_user"
+      DB_PASSWORD: "test_password"
+      GCP_PROJECT_ID: "dummy-project"
+      GCS_BUCKET_BRONZE: "dummy-bronze"
+      GCS_BUCKET_SILVER: "dummy-silver"
+      BQ_DATASET_SILVER: "dummy-silver-bq"
+      BQ_DATASET_GOLD: "dummy-gold-bq"
+
+    steps:
+    - name: Clonar el repositorio
+      uses: actions/checkout@v4
+      
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+        
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Ejecutar pruebas unitarias con pytest
+      run: |
+        pytest -v
