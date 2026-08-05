@@ -11,21 +11,21 @@ venv/
 env/
 .venv/
 
-# Variables de entorno y contraseñas
+# 3. Variables de entorno y contraseñas
 .env
 *.env
 secret*
 
-# 3. Caché de Python
+# 4. Caché de Python
 
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Credencial de Google Cloud
+# 5.Credencial de Google Cloud
 
 industrial-data-pipeline-218acf82af89.json
 
-#Cache pytest
+# 6. Cache pytest
 
 .pytest_cache
