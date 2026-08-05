@@ -25,3 +25,7 @@ __pycache__/
 # Credencial de Google Cloud
 
 industrial-data-pipeline-218acf82af89.json
+
+#Cache pytest
+
+.pytest_cache
