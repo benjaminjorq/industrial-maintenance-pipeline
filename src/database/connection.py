@@ -14,7 +14,7 @@ def get_db_connection():
         psycopg2.Error: Si ocurre un error al establecer la conexión.
     """
     try:
-        logger.info("Intentando conectar a PostgreSQL en %s:%s", DB_HOST, DB_PORT)
+        logger.info("Intentando Conectar a PostgreSQL")
         
         conn = psycopg2.connect(
             host=DB_HOST,
