@@ -110,7 +110,7 @@ def validate_production_orders_table(df: pd.DataFrame) -> pd.DataFrame:
     df = validate_schema(df, "production_orders", ["order_id", "plant_id", "status", "planned_start_date", "actual_start_date"])
     df = validate_not_null(df, "production_orders", "order_id")
     df = validate_unique(df, "production_orders", "order_id")
-    df = validate_accepted_values(df, "production_orders", "status", ["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"])
+    df = validate_accepted_values(df, "production_orders", "status", ["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED", "PLANNED"])
     return df
 
 def validate_production_yields_table(df: pd.DataFrame) -> pd.DataFrame:
