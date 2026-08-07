@@ -1,0 +1,43 @@
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Variables de entorno
+.env
+.env.*
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Datos locales
+data/
+*.csv
+*.parquet
+*.json
+
+# Git
+.git/
+.gitignore
+
+# Tests y cobertura
+tests/
+.pytest_cache/
+.coverage
+
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs y archivos temporales
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
