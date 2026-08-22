@@ -215,7 +215,7 @@ def save_parquet(df: pd.DataFrame, output_dir: Path, filename: str) -> Path:
     parquet_path = output_dir / filename
     
     logger.info("Guardando archivo Parquet optimizado en: %s", parquet_path)
-    df.to_parquet(parquet_path, index=False, engine="pyarrow")
+    df.to_parquet(parquet_path, index=False, engine="pyarrow", coerce_timestamps="us", allow_truncated_timestamps=True)
     
     return parquet_path
 

@@ -52,7 +52,7 @@ def main(target_date: str = None, target_tables: list = None) -> None:
         if table_name.startswith("gold_"):
             continue
         
-        # Filtro de ejecución manual para reprocesar tablas específicas
+        # Filtro de ejecución manual para reprocesar tablas específicas mediante Backfilling
         
         if target_tables and table_name not in target_tables:
             logger.info("Omitiendo tabla interna '%s' por configuración manual.", table_name)
@@ -115,7 +115,7 @@ def main(target_date: str = None, target_tables: list = None) -> None:
             )
             
             # Carga hacia BigQuery
-            logger.info("Cargando tabla externa '%s' a BigQuery Silver...", ext_table)
+            logger.info("Cargando tabla externa '%s' a BigQuery Silver", ext_table)
             load_parquet_to_bq_silver(
                 table_name=ext_table,
                 ingestion_date=run_date

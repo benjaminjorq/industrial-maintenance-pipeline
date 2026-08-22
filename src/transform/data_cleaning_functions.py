@@ -73,8 +73,8 @@ def fix_inverted_dates(df: pd.DataFrame, start_col: str, end_col: str) -> pd.Dat
     """
     if start_col in df.columns and end_col in df.columns:
         logger.info("Verificando consistencia de fechas entre: %s y %s", start_col, end_col)
-        df[start_col] = pd.to_datetime(df[start_col], errors='coerce')
-        df[end_col] = pd.to_datetime(df[end_col], errors='coerce')
+        df[start_col] = pd.to_datetime(df[start_col], errors='coerce').astype('datetime64[us]')
+        df[end_col] = pd.to_datetime(df[end_col], errors='coerce').astype('datetime64[us]')
         
         invalid_dates = df[start_col] > df[end_col]
         df.loc[invalid_dates, [start_col, end_col]] = df.loc[invalid_dates, [end_col, start_col]].values
@@ -96,6 +96,6 @@ def set_missing_dates_to_null(df: pd.DataFrame, column_name: str) -> pd.DataFram
     """
     if column_name in df.columns:
         logger.info("Forzando fechas vacías/nulas a NaT explícito en la columna: %s", column_name)
-        df[column_name] = pd.to_datetime(df[column_name], errors='coerce')
+        df[column_name] = pd.to_datetime(df[column_name], errors='coerce').astype('datetime64[us]')
         
     return df
