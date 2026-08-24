@@ -1,3 +1,5 @@
+-- query test 3
+
 CREATE OR REPLACE TABLE `industrial-data-pipeline.maintenance_data.gold_material_consumption` AS
 SELECT
     DATE(y.execution_date) AS fecha,

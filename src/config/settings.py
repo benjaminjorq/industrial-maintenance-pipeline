@@ -1,9 +1,3 @@
-"""Módulo de configuración central del pipeline.
-
-Centraliza la carga y validación de las variables de entorno requeridas por
-el pipeline. Aplica un enfoque *fail-fast*, deteniendo la ejecución durante
-la importación del módulo si falta alguna configuración obligatoria.
-"""
 
 import os
 import logging
@@ -15,21 +9,8 @@ from dotenv import load_dotenv
 load_dotenv(encoding="utf-8")
 
 def get_env_variable(var_name: str) -> str:
-    """Obtiene y valida una variable de entorno obligatoria.
+    """Carga y valida la configuración del pipeline desde variables de entorno."""
 
-    Recupera el valor asociado a una variable de entorno y verifica que esté
-    definida. Si la variable no existe o está vacía, lanza una excepción para
-    impedir que el pipeline continúe con una configuración incompleta.
-
-    Args:
-        var_name: Nombre de la variable de entorno.
-
-    Returns:
-        Valor asociado a la variable de entorno.
-
-    Raises:
-        ValueError: Si la variable no está definida o su valor es vacío.
-    """
     value = os.getenv(var_name)
     
     if not value:
@@ -38,12 +19,8 @@ def get_env_variable(var_name: str) -> str:
         
     return value
 
-# Instrucciones de mantenimiento: 
-# Si agregas una nueva variable en el archivo .env (ej. credenciales de una nueva API), 
-# debes registrarla aquí creando una nueva constante.
 
-
-# Base de Datos Origen (PostgreSQL Local)
+# Base de Datos Origen (PostgreSQL)
 
 DB_HOST = get_env_variable("DB_HOST")
 DB_PORT = get_env_variable("DB_PORT")

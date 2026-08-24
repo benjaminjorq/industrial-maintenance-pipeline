@@ -10,18 +10,9 @@ from utils.gcs_uploader import upload_file
 
 logger = logging.getLogger(__name__)
 
-def extract_table(query: str) -> pd.DataFrame:
-    """Ejecuta una consulta SQL en PostgreSQL y devuelve el resultado como DataFrame.
+def extract_table(query):
+    """Ejecuta una consulta SQL en PostgreSQL y devuelve un DataFrame."""
 
-    Args:
-        query: Consulta SQL a ejecutar.
-
-    Returns:
-        DataFrame con los registros obtenidos desde la base de datos.
-
-    Raises:
-        psycopg2.Error: Si ocurre un error durante la consulta.
-    """
     logger.info("Conectando a PostgreSQL para extraer datos")
     conn = get_db_connection()
     
@@ -33,17 +24,8 @@ def extract_table(query: str) -> pd.DataFrame:
         
     return df
 
-def save_csv(df: pd.DataFrame, output_dir: Path, filename: str) -> Path:
-    """Guarda un DataFrame como archivo CSV en la ruta especificada.
-
-    Args:
-        df: Datos a almacenar.
-        output_dir: Directorio de salida.
-        filename: Nombre del archivo CSV.
-
-    Returns:
-        Ruta del archivo generado.
-    """
+def save_csv(df, output_dir, filename):
+    """Guarda un DataFrame como CSV."""
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / filename
     

@@ -14,7 +14,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Definición de rutas del proyecto
 
 BASE_DIR = Path(__file__).parent
 SQL_DIR = BASE_DIR / "sql"
@@ -52,7 +51,7 @@ def main(target_date: str = None, target_tables: list = None) -> None:
         if table_name.startswith("gold_"):
             continue
         
-        # Filtro de ejecución manual para reprocesar tablas específicas mediante Backfilling
+        # Permite reprocesar únicamente tablas seleccionadas durante un backfill.
         
         if target_tables and table_name not in target_tables:
             logger.info("Omitiendo tabla interna '%s' por configuración manual.", table_name)
@@ -61,8 +60,6 @@ def main(target_date: str = None, target_tables: list = None) -> None:
         try:
             with open(sql_file, "r", encoding="utf-8") as file:
                 query = file.read()
-            
-            # Paso A: Extracción desde Postgres a CSV (Capa Bronze)
 
             postgres_extractor.run(
                 table_name=table_name,
@@ -71,9 +68,7 @@ def main(target_date: str = None, target_tables: list = None) -> None:
                 ingestion_date=run_date,
                 query_file=file_name
             )
-            
-            # Paso B: Limpieza a formato Parquet (Capa Silver Local)
-
+        
             transformer.run(
                 table_name=table_name,
                 bronze_path=BRONZE_DIR,
@@ -81,8 +76,6 @@ def main(target_date: str = None, target_tables: list = None) -> None:
                 ingestion_date=run_date
             )
             
-            # Paso C: Carga del archivo Parquet hacia BigQuery
-
             logger.info("Cargando tabla interna '%s' a BigQuery Silver", table_name)
             load_parquet_to_bq_silver(
                 table_name=table_name,
@@ -105,8 +98,7 @@ def main(target_date: str = None, target_tables: list = None) -> None:
             
         try:
             logger.info("Procesando tabla externa '%s'", ext_table)
-            
-            # Limpieza del archivo raw a Parquet
+        
             transformer.run(
                 table_name=ext_table,
                 bronze_path=BRONZE_DIR,
@@ -114,7 +106,6 @@ def main(target_date: str = None, target_tables: list = None) -> None:
                 ingestion_date=run_date
             )
             
-            # Carga hacia BigQuery
             logger.info("Cargando tabla externa '%s' a BigQuery Silver", ext_table)
             load_parquet_to_bq_silver(
                 table_name=ext_table,
@@ -124,8 +115,6 @@ def main(target_date: str = None, target_tables: list = None) -> None:
         except Exception as error:
             logger.error("Error procesando tabla externa '%s'.", ext_table, exc_info=True)
             continue
-
-    # Fase 3: Procesamiento de la Capa Gold (Modelos Gerenciales)
 
     logger.info("Iniciando construcción de la capa Gold")
     try:

@@ -3,8 +3,9 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-def validate_non_empty(df: pd.DataFrame, table_name: str) -> pd.DataFrame:
+def validate_non_empty(df, table_name):
     """Verifica que el DataFrame contenga al menos un registro."""
+
     logger.info("Validando que la tabla '%s' no esté vacía", table_name)
     
     if df.empty:
@@ -13,8 +14,9 @@ def validate_non_empty(df: pd.DataFrame, table_name: str) -> pd.DataFrame:
         
     return df
 
-def validate_schema(df: pd.DataFrame, table_name: str, expected_cols: list) -> pd.DataFrame:
+def validate_schema(df, table_name, expected_cols):
     """Verifica que el DataFrame tenga todas las columnas obligatorias."""
+
     logger.info("Validando esquema (schema) en '%s'", table_name)
     
     missing_cols = [col for col in expected_cols if col not in df.columns]
@@ -25,8 +27,9 @@ def validate_schema(df: pd.DataFrame, table_name: str, expected_cols: list) -> p
         
     return df
 
-def validate_not_null(df: pd.DataFrame, table_name: str, column_name: str) -> pd.DataFrame:
+def validate_not_null(df, table_name, column_name):
     """Asegura que una columna exista y no contenga valores nulos."""
+
     if column_name not in df.columns:
         logger.error("Error crítico: La columna '%s' no existe en '%s'", column_name, table_name)
         raise ValueError(f"Data Quality: Columna '{column_name}' no existe en '{table_name}'")
@@ -41,11 +44,9 @@ def validate_not_null(df: pd.DataFrame, table_name: str, column_name: str) -> pd
         
     return df
 
-def validate_unique(df: pd.DataFrame, table_name: str, column_name: str) -> pd.DataFrame:
-    """
-    Valida que los valores de una columna no se repitan.
-    Los duplicados detienen el pipeline, no se eliminan.
-    """
+def validate_unique(df, table_name, column_name):
+    """Valida que una columna no contenga valores duplicados."""
+
     if column_name not in df.columns:
         logger.error("Error crítico: La columna '%s' no existe en '%s'", column_name, table_name)
         raise ValueError(f"Data Quality: Columna '{column_name}' no existe en '{table_name}'")
@@ -60,8 +61,9 @@ def validate_unique(df: pd.DataFrame, table_name: str, column_name: str) -> pd.D
         
     return df
 
-def validate_accepted_values(df: pd.DataFrame, table_name: str, column_name: str, allowed_values: list) -> pd.DataFrame:
+def validate_accepted_values(df, table_name, column_name, allowed_values):
     """Asegura que los datos de una columna estén dentro de una lista permitida."""
+
     if column_name not in df.columns:
         logger.error("Error crítico: La columna '%s' no existe en '%s'", column_name, table_name)
         raise ValueError(f"Data Quality: Columna '{column_name}' no existe en '{table_name}'")
@@ -78,7 +80,7 @@ def validate_accepted_values(df: pd.DataFrame, table_name: str, column_name: str
         
     return df
 
-def validate_positive_values(df: pd.DataFrame, table_name: str, column_name: str) -> pd.DataFrame:
+def validate_positive_values(df, table_name, column_name):
     """Verifica que una métrica numérica no contenga valores negativos."""
     if column_name not in df.columns:
         logger.error("Error crítico: La columna '%s' no existe en '%s'", column_name, table_name)
@@ -95,8 +97,9 @@ def validate_positive_values(df: pd.DataFrame, table_name: str, column_name: str
         
     return df
 
-def validate_chronological_order(df: pd.DataFrame, table_name: str, start_col: str, end_col: str) -> pd.DataFrame:
+def validate_chronological_order(df, table_name, start_col, end_col):
     """Verifica que la fecha de inicio no sea mayor a la de fin."""
+    
     if start_col not in df.columns:
         logger.error("Error crítico: La columna '%s' no existe en '%s'", start_col, table_name)
         raise ValueError(f"Data Quality: Columna '{start_col}' no existe en '{table_name}'")

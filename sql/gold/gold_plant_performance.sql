@@ -1,3 +1,5 @@
+-- query test 3
+
 CREATE OR REPLACE TABLE `industrial-data-pipeline.maintenance_data.gold_plant_performance` AS
 SELECT
     p.plant_name AS planta,
