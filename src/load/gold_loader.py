@@ -6,12 +6,7 @@ from src.config.settings import GCP_PROJECT_ID
 
 logger = logging.getLogger(__name__)
 
-# Módulo: Gold Loader
-# Ejecuta modelos SQL analíticos de la capa Gold en BigQuery.
-# Mantiene separada la lógica de negocio (SQL) de la lógica de ejecución (Python).
-# Cada archivo SQL representa un modelo independiente del pipeline.
-
-def execute_gold_layer(sql_folder: Path) -> None:
+def execute_gold_layer(sql_folder):
     """Ejecuta los modelos analíticos de la capa Gold en BigQuery.
 
     Lee los archivos SQL almacenados en el directorio indicado y ejecuta
@@ -34,8 +29,9 @@ def execute_gold_layer(sql_folder: Path) -> None:
         logger.error("Fallo crítico: El directorio de modelos Gold '%s' no existe.", sql_folder)
         return
         
-    # Ordena los modelos para ejecución
-    # (ejemplo: 01_tabla_base.sql, 02_tabla_metricas.sql).
+# Los modelos se ejecutan secuencialmente para asegurar que cada consulta
+# termine antes de iniciar la siguiente.
+
     sql_files = sorted(sql_folder.glob("*.sql"))
     
     if not sql_files:

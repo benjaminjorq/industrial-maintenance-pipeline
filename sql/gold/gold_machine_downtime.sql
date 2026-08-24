@@ -1,4 +1,4 @@
--- query dummy de prueba
+-- Query test 2
 
 CREATE OR REPLACE TABLE `industrial-data-pipeline.maintenance_data.gold_machine_downtime` AS
 SELECT 

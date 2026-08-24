@@ -3,10 +3,8 @@ from main import main
 
 logger = logging.getLogger(__name__)
 
-# Parámetros de ejecución para reprocesamiento
-# Instrucciones de mantenimiento:
 # Modifica 'target_date' con la fecha exacta del día que deseas recuperar.
-# En 'failed_tables', coloca únicamente el nombre de las tablas afectadas para no sobrecargar el sistema.
+# En 'failed_tables', colocar únicamente el nombre de las tablas afectadas para no sobrecargar el sistema.
 # Si necesitas reprocesar todas las tablas de ese día, asigna: failed_tables = None
 
 target_date = "2026-07-01"

@@ -4,7 +4,7 @@ from google.cloud import storage
 
 logger = logging.getLogger(__name__)
 
-def upload_file(local_file_path: Path, bucket_name: str, cloud_destination_path: str) -> bool:
+def upload_file(local_file_path, bucket_name, cloud_destination_path):
     """Carga un archivo local hacia una ubicación específica en Cloud Storage.
 
     Args:

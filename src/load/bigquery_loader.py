@@ -4,7 +4,7 @@ from src.config.settings import GCP_PROJECT_ID, GCS_BUCKET_SILVER, BQ_DATASET_SI
 
 logger = logging.getLogger(__name__)
 
-def load_parquet_to_bq_silver(table_name: str, ingestion_date: str) -> None:
+def load_parquet_to_bq_silver(table_name, ingestion_date):
     """Carga un archivo Parquet desde la capa Silver en GCS hacia BigQuery.
 
     Transfiere los datos limpios almacenados en Cloud Storage hacia una tabla
@@ -39,7 +39,7 @@ def load_parquet_to_bq_silver(table_name: str, ingestion_date: str) -> None:
 
     table_id = f"{GCP_PROJECT_ID}.{BQ_DATASET_SILVER}.{table_name}"
     
-    # Configura el comportamiento del proceso de carga.
+    # Full Refresh:
     # Actualmente se utiliza WRITE_TRUNCATE para reemplazar completamente
     # la tabla destino en cada ejecución.
     # En una implementación incremental podría reemplazarse por WRITE_APPEND
@@ -47,20 +47,15 @@ def load_parquet_to_bq_silver(table_name: str, ingestion_date: str) -> None:
 
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.PARQUET,
-        # Truncamos la tabla para probar
         write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
     )
     
     try:
-        # Ejecuta el job de carga desde Cloud Storage hacia BigQuery.
         logger.info("Cargando archivo: %s", uri)
         load_job = client.load_table_from_uri(uri, table_id, job_config=job_config)
-        
-        # Espera la finalización del job antes de continuar,
-        # asegurando que la tabla esté disponible para las siguientes etapas.
+    
         load_job.result() 
         
-        # Obtiene información de la tabla cargada para registrar métricas básicas.
         destination_table = client.get_table(table_id)
         logger.info("Carga exitosa. La tabla %s ahora tiene %s filas.", table_name, destination_table.num_rows)
         
