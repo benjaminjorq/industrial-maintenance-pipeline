@@ -14,7 +14,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 BASE_DIR = Path(__file__).parent
 SQL_DIR = BASE_DIR / "sql"
 BRONZE_DIR = BASE_DIR / "data" / "bronze"
@@ -38,11 +37,12 @@ def main(target_date: str = None, target_tables: list = None) -> None:
     # Fase 1: Extracción, Transformación y Carga (Tablas Internas - Base de Datos)
     
     if not SQL_DIR.exists():
-        logger.error("Fallo crítico: El directorio %s no existe.", SQL_DIR)
-        return
+        raise FileNotFoundError(f"El directorio SQL no existe: {SQL_DIR}")
         
     sql_files = list(SQL_DIR.glob("*.sql"))
     logger.info("Se detectaron %s tablas internas para procesar.", len(sql_files))
+
+    pipeline_failed = False
     
     for sql_file in sql_files:
         table_name = sql_file.stem
@@ -61,6 +61,8 @@ def main(target_date: str = None, target_tables: list = None) -> None:
             with open(sql_file, "r", encoding="utf-8") as file:
                 query = file.read()
 
+            # Extracción desde PostgreSQL a CSV (Bronze)
+
             postgres_extractor.run(
                 table_name=table_name,
                 query=query,
@@ -68,13 +70,17 @@ def main(target_date: str = None, target_tables: list = None) -> None:
                 ingestion_date=run_date,
                 query_file=file_name
             )
-        
+
+            # Limpieza a formato Parquet (Staging)
+
             transformer.run(
                 table_name=table_name,
                 bronze_path=BRONZE_DIR,
                 silver_path=SILVER_DIR,
                 ingestion_date=run_date
             )
+
+            # Carga del archivo Parquet hacia BigQuery
             
             logger.info("Cargando tabla interna '%s' a BigQuery Silver", table_name)
             load_parquet_to_bq_silver(
@@ -84,6 +90,7 @@ def main(target_date: str = None, target_tables: list = None) -> None:
             
         except Exception as error:
             logger.error("Error procesando tabla '%s'.", table_name, exc_info=True)
+            pipeline_failed = True
             continue
             
     # Fase 2: Procesamiento y Carga de Tablas Externas
@@ -114,7 +121,10 @@ def main(target_date: str = None, target_tables: list = None) -> None:
             
         except Exception as error:
             logger.error("Error procesando tabla externa '%s'.", ext_table, exc_info=True)
+            pipeline_failed = True
             continue
+
+    # Procesamiento de la Capa Gold (Tablas de Producción - Gerencia)
 
     logger.info("Iniciando construcción de la capa Gold")
     try:
@@ -122,6 +132,9 @@ def main(target_date: str = None, target_tables: list = None) -> None:
     except Exception:
         logger.error("Fallo crítico durante la construcción de la capa Gold.", exc_info=True)
         raise
+
+    if pipeline_failed:
+        raise RuntimeError("Pipeline finalizado, se encontraron errores críticos en una o más tablas (Revisar logs).")
 
     logger.info("Pipeline End-to-End finalizado correctamente.")
 
