@@ -1,23 +1,24 @@
--- query test 3
+-- Shows historical production performance by plant and region.
+-- The quality percentage represents the proportion of good units
+-- relative to total production, including good and rejected units.
 
 CREATE OR REPLACE TABLE `industrial-data-pipeline.maintenance_data.gold_plant_performance` AS
+
 SELECT
-    p.plant_name AS planta,
+    p.plant_name AS plant,
     p.region AS region,
-    -- KPI 1: Piezas buenas históricas
-    SUM(y.good_quantity) AS total_piezas_buenas,
-    -- KPI 2: Chatarra histórica
-    SUM(y.scrap_quantity) AS total_scrap,
-    -- KPI 3: Porcentaje de calidad (Protegido contra división por cero)
-    ROUND(
-        SAFE_DIVIDE(
-            SUM(y.good_quantity),
-            SUM(y.good_quantity) + SUM(y.scrap_quantity)
-        ) * 100, 
-    2) AS porcentaje_calidad
-FROM `industrial-data-pipeline.industrial_silver.plants` p
-JOIN `industrial-data-pipeline.industrial_silver.machines` m 
-ON p.plant_id = m.plant_id
-JOIN `industrial-data-pipeline.industrial_silver.production_yields` y 
-ON m.machine_id = y.machine_id
-GROUP BY 1, 2;
+    SUM(y.good_quantity) AS good_units,
+    SUM(y.scrap_quantity) AS rejected_units,
+    ROUND(SAFE_DIVIDE(SUM(y.good_quantity), SUM(y.good_quantity + y.scrap_quantity)) * 100, 2) AS quality_percentage
+
+FROM `industrial-data-pipeline.industrial_silver.production_yields` AS y
+
+JOIN `industrial-data-pipeline.industrial_silver.machines` AS m
+    ON y.machine_id = m.machine_id
+
+JOIN `industrial-data-pipeline.industrial_silver.plants` AS p
+    ON m.plant_id = p.plant_id
+
+GROUP BY
+    plant,
+    region;
