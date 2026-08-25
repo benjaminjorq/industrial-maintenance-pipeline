@@ -29,6 +29,11 @@ def clean_suppliers_table(df):
     df = clean_spaces(df, "country")
     return convert_to_title_case(df, "country")
 
+def clean_quality_control_table(df):
+    df = clean_spaces(df, "inspector_name")
+    df = convert_to_title_case(df, "inspector_name")
+    return fix_negative_numbers(df, "quality_score")
+
 def clean_machines_table(df):
     return convert_to_uppercase(df, "status")
 
@@ -50,6 +55,8 @@ def clean_production_yields_table(df):
 def clean_downtime_events_table(df):
     return fix_inverted_dates(df, "start_timestamp", "end_timestamp")
 
+
+
 CLEANING_RULES = {
     "plants": clean_plants_table,
     "product_categories": clean_product_categories_table,
@@ -59,7 +66,8 @@ CLEANING_RULES = {
     "products": clean_products_table,
     "production_orders": clean_production_orders_table,
     "production_yields": clean_production_yields_table,
-    "downtime_events": clean_downtime_events_table
+    "downtime_events": clean_downtime_events_table,
+    "quality_control": clean_quality_control_table
 }
 
 # Reglas de Calidad por Tabla
@@ -124,6 +132,13 @@ def validate_downtime_events_table(df):
     df = validate_chronological_order(df, "downtime_events", "start_timestamp", "end_timestamp")
     return df
 
+def validate_quality_control_table(df):
+    df = validate_schema(df, "quality_control", ["quality_id", "production_yield_id", "inspector_name", "quality_score", "is_approved"])
+    df = validate_not_null(df, "quality_control", "quality_id")
+    df = validate_unique(df, "quality_control", "quality_id")
+    df = validate_positive_values(df, "quality_control", "quality_score")
+    return df
+
 VALIDATION_RULES = {
     "plants": validate_plants_table,
     "product_categories": validate_product_categories_table,
@@ -133,7 +148,8 @@ VALIDATION_RULES = {
     "products": validate_products_table,
     "production_orders": validate_production_orders_table,
     "production_yields": validate_production_yields_table,
-    "downtime_events": validate_downtime_events_table
+    "downtime_events": validate_downtime_events_table,
+    "quality_control": validate_quality_control_table
 }
 
 # Flujo de Procesamiento Silver

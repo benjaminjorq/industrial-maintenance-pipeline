@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
-from src.extractors import postgres_extractor
+from src.extractors import postgres_extractor, sftp_extractor
 from src.transform import transformer
 from src.load.bigquery_loader import load_parquet_to_bq_silver
 from src.load.gold_loader import execute_gold_layer
@@ -96,15 +96,25 @@ def main(target_date: str = None, target_tables: list = None) -> None:
     # Fase 2: Procesamiento y Carga de Tablas Externas
     # Archivos que no vienen de la BD (ej. Conexión Externa (SFTP)). 
     
-    external_tables = []
+    external_tables = [{"table_name": "quality_control", "remote_file": "quality_control_day4.csv"}]
     
-    for ext_table in external_tables:
+    for ext in external_tables:
+        ext_table = ext["table_name"]
+        remote_file = ext["remote_file"]
+
         if target_tables and ext_table not in target_tables:
             logger.info("Omitiendo tabla externa '%s' por configuración manual.", ext_table)
             continue
             
         try:
             logger.info("Procesando tabla externa '%s'", ext_table)
+
+            sftp_extractor.run(
+                table_name=ext_table,
+                bronze_path=BRONZE_DIR,
+                ingestion_date=run_date,
+                remote_filename=remote_file
+            )
         
             transformer.run(
                 table_name=ext_table,

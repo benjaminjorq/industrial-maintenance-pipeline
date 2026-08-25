@@ -41,3 +41,11 @@ GCS_BUCKET_SILVER = get_env_variable("GCS_BUCKET_SILVER")
 
 BQ_DATASET_SILVER= get_env_variable("BQ_DATASET_SILVER")
 BQ_DATASET_GOLD = get_env_variable("BQ_DATASET_GOLD")
+
+# Conexión Remota SFTP
+
+SFTP_HOST = get_env_variable("SFTP_HOST")
+SFTP_PORT = get_env_variable("SFTP_PORT")
+SFTP_USER = get_env_variable("SFTP_USER")
+SFTP_PASSWORD = get_env_variable("SFTP_PASSWORD")
+SFTP_REMOTE_PATH = get_env_variable("SFTP_REMOTE_PATH")
