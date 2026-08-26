@@ -97,10 +97,6 @@ pytest -v
 
 The final layer provides curated analytical outputs designed to answer specific business questions, with tables ready for consumption in Looker Studio.
 
-<img width="871" height="421" alt="performance" src="https://github.com/user-attachments/assets/83a9da45-b8a1-4888-942f-6fb292be0870" />
-
-*Daily production performance by plant and region. The quality rate represents the percentage of good units relative to total production volume (good + rejected).*
-
 <details>
 <summary><b>🔍 View SQL Model: Daily Plant Performance</b></summary>
 
@@ -128,6 +124,10 @@ ORDER BY
 ```
 
 </details>
+
+<img width="871" height="421" alt="performance" src="https://github.com/user-attachments/assets/83a9da45-b8a1-4888-942f-6fb292be0870" />
+
+*Daily production performance by plant and region. The quality rate represents the percentage of good units relative to total production volume (good + rejected).*
 
 ---
 
