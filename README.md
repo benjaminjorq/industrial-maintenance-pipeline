@@ -13,34 +13,35 @@ End-to-end data engineering pipeline for processing industrial production, maint
 
 ## 1. Architecture & Data Flow
 
-**DFD DATA FLOW IMAGE(IN PROCESS)**
+**DFD DATA FLOW IMAGE (IN PROCESS)**
 
 The pipeline follows a strict **Medallion Architecture**, decoupling extraction, transformation, and analytical modeling:
 
-*   **Ingestion:** PostgreSQL and SFTP sources are extracted into **Google Cloud Storage**, preserving raw CSV files alongside JSON metadata for traceability, auditing, and historical reproducibility.
-*   **Transformation:** **Pandas-based transformations** perform schema normalization, data cleansing, type standardization, and data quality validation. Processed datasets are serialized as **Parquet** and stored in the Silver layer.
-*   **Analytics:** **BigQuery SQL models** consume the Silver layer to build curated **Gold** datasets optimized for analytical workloads and reporting.
+- **Ingestion:** PostgreSQL and SFTP sources are extracted into **Google Cloud Storage**, preserving raw CSV files alongside JSON metadata for traceability, auditing, and historical reproducibility.
+- **Transformation:** **Pandas-based transformations** perform schema normalization, data cleansing, type standardization, and data quality validation. Processed datasets are serialized as **Parquet** and stored in the Silver layer.
+- **Analytics:** **BigQuery SQL models** consume the Silver layer to build curated **Gold** datasets optimized for analytical workloads and reporting.
 
 ---
 
 ## 2. Cloud Infrastructure & Engineering Practices
 
-The pipeline is containerized and designed for scalable cloud execution. 
+The pipeline is containerized and designed for scalable cloud execution.
 
-| Service               | Purpose                                                  |
-| :-------------------- | :------------------------------------------------------- |
-| **Cloud Run Jobs**    | Containerized batch ETL execution                        |
-| **Cloud Storage**     | Immutable Bronze and optimized Silver (Parquet) storage  |
-| **BigQuery**          | Analytical Data Warehouse and Gold layer materialization |
-| **Artifact Registry** | Secure Docker image storage                              |
-| **Secret Manager**    | Environment and credential management                    |
+| Service               | Purpose                                                   |
+| :--------------------- | :--------------------------------------------------------- |
+| **Cloud Run Jobs**    | Containerized batch ETL execution                         |
+| **Cloud Storage**     | Immutable Bronze and optimized Silver (Parquet) storage    |
+| **BigQuery**          | Analytical Data Warehouse and Gold layer materialization   |
+| **Artifact Registry** | Secure Docker image storage                                |
+| **Secret Manager**    | Environment and credential management                      |
 
 **Core Engineering Practices:**
-*   **Decoupled Logic:** Python handles ETL; SQL handles business KPIs.
-*   **CI & Testing:** Automated testing with Pytest and GitHub Actions.
-*   **Hybrid Ingestion:** Standardizes heterogeneous data sources, seamlessly unifying internal relational database streams (PostgreSQL) with remote external vendor files (SFTP) into a single processing engine.
-*   **Idempotent Execution:** The pipeline is designed to be safely executed multiple times for the same logical date without duplicating downstream data, ensuring a reliable state in the data warehouse.
-*   **Backfilling:** Custom CLI tools (`trigger_backfilling.py`) allow surgical historical reprocessing.
+
+- **Decoupled Logic:** Python handles ETL; SQL handles business KPIs.
+- **CI & Testing:** Automated testing with Pytest and GitHub Actions.
+- **Hybrid Ingestion:** Standardizes heterogeneous data sources, seamlessly unifying internal relational database streams (PostgreSQL) with remote external vendor files (SFTP) into a single processing engine.
+- **Idempotent Execution:** The pipeline is designed to be safely executed multiple times for the same logical date without duplicating downstream data, ensuring a reliable state in the data warehouse.
+- **Backfilling:** Custom CLI tools (`trigger_backfilling.py`) allow surgical historical reprocessing.
 
 ---
 
@@ -50,9 +51,9 @@ Data is validated *before* reaching the analytical layers using a fail-fast appr
 
 <img width="1411" height="371" alt="image" src="https://github.com/user-attachments/assets/722cabfb-c215-47df-82f7-99cf54a8b1a6" />
 
-*   **Schema & Constraints:** Ensures exact column matches, non-empty datasets, and uniqueness of primary keys.
-*   **Business Rules:** Validates that metrics (costs, quantities) are positive and checks chronological consistency (e.g., `downtime.start_timestamp < downtime.end_timestamp`).
-*   **Pipeline State:** If a critical validation fails, the specific table is dropped from the current run, but the overall pipeline gracefully continues with the remaining tables, flagging a final exit error for monitoring tools.
+- **Schema & Constraints:** Ensures exact column matches, non-empty datasets, and uniqueness of primary keys.
+- **Business Rules:** Validates that metrics (costs, quantities) are positive and checks chronological consistency (e.g., `downtime.start_timestamp < downtime.end_timestamp`).
+- **Pipeline State:** If a critical validation fails, the specific table is dropped from the current run, but the overall pipeline gracefully continues with the remaining tables, flagging a final exit error for monitoring tools.
 
 ---
 
@@ -65,24 +66,29 @@ The pipeline includes automated unit tests covering data cleaning functions, qua
 *Test suite covering cleaning rules, schema validation, and business logic across all Silver-layer tables.*
 
 Run locally with:
+
 ```bash
 pytest -v
 ```
 
 ---
 
-## 5. Key Engineering Decisions
+## 5. FAQ & Design Decisions
 
-- **Why use Cloud Run Jobs instead of Cloud Functions?**  
+- **Why use Cloud Run Jobs instead of Cloud Functions?**
+
   The ETL pipeline is a finite, scheduled batch workload that processes multiple tables sequentially. **Cloud Run Jobs** are better suited for run-to-completion workloads, allowing the entire pipeline to run as a containerized application with configurable CPU, memory, and execution time. Cloud Functions would be more appropriate for isolated, event-driven tasks rather than a multi-stage ETL process.
 
-- **Why use Supabase (PostgreSQL) instead of Google Cloud SQL?**  
+- **Why use Supabase (PostgreSQL) instead of Google Cloud SQL?**
+
   The decision was driven by cost efficiency and resource allocation. Supabase provides a managed PostgreSQL environment that was sufficient to simulate a realistic remote OLTP source without introducing additional database infrastructure costs. This allowed the project to focus GCP resources on data processing, storage, orchestration, and analytics.
 
-- **Why implement a Full Refresh loading strategy?**  
+- **Why implement a Full Refresh loading strategy?**
+
   For datasets processing fewer than 100k records per run, a Full Refresh strategy (truncating and reloading the destination tables) is efficient, simple to maintain, and eliminates the risk of data duplication or state mismatch. Given the current data volume and workload characteristics, the additional complexity of incremental loading was not justified.
 
-- **Why integrate an external SFTP server into the pipeline?**  
+- **Why integrate an external SFTP server into the pipeline?**
+
   Industrial environments rarely rely on a single centralized data source. Third-party vendors, external laboratories, and legacy systems often exchange operational data through flat files and SFTP. Integrating SFTP demonstrates the pipeline's ability to ingest heterogeneous data sources and unify them into a single processing architecture.
 
 ---
@@ -107,7 +113,6 @@ SELECT
     SUM(y.good_quantity) AS good_units,
     SUM(y.scrap_quantity) AS rejected_units,
     ROUND(SAFE_DIVIDE(SUM(y.good_quantity), SUM(y.good_quantity + y.scrap_quantity)) * 100, 2) AS quality_percentage
-
 FROM `industrial-data-pipeline.industrial_silver.production_yields` AS y
 JOIN `industrial-data-pipeline.industrial_silver.machines` AS m
     ON y.machine_id = m.machine_id
@@ -117,31 +122,38 @@ GROUP BY
     production_date,
     plant,
     region
-ORDER BY 
-    production_date DESC, 
+ORDER BY
+    production_date DESC,
     plant ASC;
 ```
+
 </details>
 
-| Dataset                     | Description                                                                    |
-| :-------------------------- | :----------------------------------------------------------------------------- |
-| `gold_daily_production`     | Daily production volume and cost by plant and product.                         |
+---
+
+### Other Gold Datasets
+
+| Dataset                     | Description                                                                |
+| :--------------------------- | :--------------------------------------------------------------------------- |
+| `gold_daily_production`     | Daily production volume and cost by plant and product.                    |
 | `gold_machine_downtime`     | Maintenance KPIs detailing lost minutes by plant, machine, and failure reason. |
-| `gold_material_consumption` | Logistics tracing material consumption by product and supplier.                |
-| `gold_plant_performance`    | Executive summary of production quality and scrap percentages by region.       |
-| `gold_quality_performance`  | Quality control performance by plant.                                          |
+| `gold_material_consumption` | Logistics tracing material consumption by product and supplier.           |
+| `gold_plant_performance`    | Executive summary of production quality and scrap percentages by region.  |
+| `gold_quality_performance`  | Quality control performance by plant.                                     |
 
 ---
 
 ## 7. Getting Started
 
 ### Prerequisites
+
 - Python 3.12+
 - Google Cloud project with a Service Account (BigQuery + Cloud Storage access)
 - PostgreSQL (Supabase) source database
 - SFTP server access
 
 ### Installation
+
 ```bash
 git clone https://github.com/benjaminjorq/industrial-maintenance-pipeline.git
 cd industrial-maintenance-pipeline
@@ -153,6 +165,7 @@ pip install -r requirements.txt
 ```
 
 ### Configuration
+
 Create a `.env` file in the project root with your database, GCP, and SFTP credentials (see `.env.example` for the required variables).
 
 > Make sure `known_hosts` is present in the project root — it's required for the SFTP connection (`RejectPolicy`).
@@ -160,18 +173,22 @@ Create a `.env` file in the project root with your database, GCP, and SFTP crede
 > **Tech note:** the Cloud Run job and the SFTP connection currently run separately. The SFTP server (SFTPGo) is hosted on `localhost`, so it isn't reachable from within the Cloud Run environment — this is a known infra limitation, not a code issue. Until SFTPGo is deployed somewhere network-accessible to Cloud Run (e.g. a public/VPC-reachable host), the SFTP extraction step needs to be triggered locally.
 
 ### Run the pipeline
+
 ```bash
 python main.py
 ```
+
 Runs the full flow: extraction (PostgreSQL + SFTP) → Silver transformation & validation → BigQuery load → Gold layer build.
 
 ### Backfill & Tests
+
 ```bash
 python backfill/trigger_backfilling.py   # reprocess specific tables/dates
 pytest -v                                # run tests
 ```
 
 ### Run with Docker (optional)
+
 ```bash
 docker build -t industrial-maintenance-pipeline .
 docker run --env-file .env industrial-maintenance-pipeline
@@ -267,9 +284,4 @@ industrial-maintenance-pipeline/
 │
 ├── .dockerignore                      # Files excluded from the Docker image build
 ├── .env.example                       # Environment variable template
-├── .gitignore                         # Temporary files, credentials, and local data excluded from Git
-├── Dockerfile                         # Container configuration for Cloud Run Jobs
-├── README.md                          # Main project documentation and usage guide
-├── requirements.txt                   # Python project dependencies
-└── main.py                            # Main entry point and pipeline orchestrator
-```
+├── .gitignore                         # Temporary files, credentials, and
