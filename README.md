@@ -81,7 +81,7 @@ pytest -v
 
 - **Why use Supabase (PostgreSQL) instead of Google Cloud SQL?**
 
-  The decision was driven by cost efficiency and resource allocation. Supabase provides a managed PostgreSQL environment that was sufficient to simulate a realistic remote OLTP source without introducing additional database infrastructure costs. This allowed the project to focus GCP resources on data processing, storage, orchestration, and analytics.
+  The decision was driven by cost and connectivity constraints. Running PostgreSQL locally introduced connectivity issues in this environment, making it unreliable as a pipeline source, while Google Cloud SQL was avoided to prevent additional infrastructure costs. Supabase provided a free, managed PostgreSQL environment that solved both problems.
 
 - **Why implement a Full Refresh loading strategy?**
 
