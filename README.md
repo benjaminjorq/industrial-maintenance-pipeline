@@ -141,6 +141,22 @@ ORDER BY
 | `gold_plant_performance`    | Executive summary of production quality and scrap percentages by region.  |
 | `gold_quality_performance`  | Quality control performance by plant.                                     |
 
+### Dashboard & Visualization
+
+The `gold_plant_performance` table feeds a **Looker Studio** dashboard that consolidates production and quality KPIs across all plants, with filtering by period, region, and plant.
+
+<img width="1152" height="866" alt="Industrial Operations Dashboard" src="https://github.com/user-attachments/assets/a673f8fc-a168-4a6c-8b69-9bb8f5e395c0" />
+
+*Industrial Operations Dashboard — daily quality trend, plant performance ranking, and a breakdown table of good/rejected units by plant and region.*
+
+**Key metrics displayed:**
+
+- **Good Units / Rejected Units:** total production volume split by outcome.
+- **Quality Percentage:** good units as a share of total production, consistent with the `quality_percentage` KPI computed in `gold_plant_performance`.
+- **Inspection Approval % (5 Days):** rolling approval rate from quality control inspections.
+- **Daily Quality Trend:** quality percentage over time, used to spot degradation early.
+- **Plant Performance Ranking:** plants sorted by quality percentage, to quickly flag underperformers.
+  
 ---
 
 ## 7. Getting Started
