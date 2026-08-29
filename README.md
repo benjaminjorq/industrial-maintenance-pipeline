@@ -23,7 +23,7 @@ This project simulates a **7-day data workflow for an industrial maintenance com
                                               │
                                               ▼
 INSERT / BULK INSERT ───→ PostgreSQL ───→  Bronze  ───→ Transform + DQ ───→  Silver  ───→  BigQuery ───→ Gold ───→ Looker
-     (Days 1–7)                           CSV | GCS         Pandas        Parquet | GCS               SQL
+     (Days 1–7)                           CSV | GCS         Pandas        Parquet | GCS                   SQL
 
 • Orchestration: Cloud Scheduler · Cloud Run Jobs
 • Cloud: GCS · BigQuery · Artifact Registry · Secret Manager · IAM
