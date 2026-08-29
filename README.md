@@ -36,7 +36,7 @@ The scenario demonstrates how an existing batch pipeline can incorporate a **new
 
 ## 2. Architecture & Data Flow
 
-<img width="1226" height="817" alt="Medallion architecture data flow diagram" src=<img width="1190" height="788" alt="diagrama resumido" src="https://github.com/user-attachments/assets/210ea8c5-1180-44e2-b0b3-49ef5f34d6e8" />
+<img width="1190" height="788" alt="Medallion architecture data flow diagram" src="https://github.com/user-attachments/assets/210ea8c5-1180-44e2-b0b3-49ef5f34d6e8" />
 
 The pipeline follows a strict **Medallion Architecture**, decoupling extraction, transformation, and analytical modeling:
 
