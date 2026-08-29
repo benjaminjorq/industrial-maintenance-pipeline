@@ -2,18 +2,41 @@
 
 End-to-end data engineering pipeline for processing industrial production, maintenance, and quality data from heterogeneous sources and generating analytical datasets on Google Cloud Platform.
 
-[![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED.svg)](https://www.docker.com/)
-[![GCP](https://img.shields.io/badge/GCP-Cloud_Run_%7C_BigQuery-4285F4.svg)](https://cloud.google.com/)
-[![Tests](https://img.shields.io/badge/Tests-Pytest-success.svg)](https://docs.pytest.org/)
-
-> A batch pipeline implementing a Medallion Architecture (Bronze/Silver/Gold). It seamlessly integrates internal PostgreSQL operational data with external SFTP vendor files, enforcing strict fail-fast data quality validations before publishing analytical models in BigQuery.
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![GCP](https://img.shields.io/badge/GCP-Cloud_Run_%7C_BigQuery-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com/)
+[![Tests](https://img.shields.io/badge/Tests-Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
 
 ---
 
-## 1. Architecture & Data Flow
+## 1. Business Context & 7-Day Scenario
 
-**DFD DATA FLOW IMAGE (IN PROCESS)**
+This project simulates a **7-day data workflow for an industrial maintenance company**, centralizing operational data related to production, maintenance, and quality. Data is initially processed from PostgreSQL, while on **Day 4**, an external SFTP source is introduced to integrate third-party quality control data into the existing pipeline.
+
+```text
+                         7-DAY PIPELINE EXECUTION FLOW
+
+                         Days 1–3: PostgreSQL
+                                  │
+                          Days 4–7: + SFTP
+                                  ▼
+PostgreSQL / SFTP → Bronze → Transform + DQ → Silver → BigQuery Silver → Gold → Looker
+                     CSV        Pandas         Parquet        SQL
+                     GCS                        GCS
+
+• Orchestration: Cloud Scheduler · Cloud Run Jobs
+• Cloud: GCS · BigQuery · Artifact Registry · Secret Manager · IAM
+• Quality & Ops: Data Quality · Pytest · GitHub Actions · Logging · Monitoring
+• Strategy: Full Refresh · Medallion Architecture
+```
+
+The scenario demonstrates how an existing batch pipeline can incorporate a **new heterogeneous data source** while preserving the same transformation, validation, storage, and analytical workflow.
+
+---
+
+## 2. Architecture & Data Flow
+
+<img width="1226" height="817" alt="Medallion architecture data flow diagram" src="https://github.com/user-attachments/assets/226772d4-88ea-4989-b3a1-d43e5878130b" />
 
 The pipeline follows a strict **Medallion Architecture**, decoupling extraction, transformation, and analytical modeling:
 
@@ -21,9 +44,11 @@ The pipeline follows a strict **Medallion Architecture**, decoupling extraction,
 - **Transformation:** **Pandas-based transformations** perform schema normalization, data cleansing, type standardization, and data quality validation. Processed datasets are serialized as **Parquet** and stored in the Silver layer.
 - **Analytics:** **BigQuery SQL models** consume the Silver layer to build curated **Gold** datasets optimized for analytical workloads and reporting.
 
+> **Note on SFTP execution:** the PostgreSQL extraction and Gold layer build run fully automated on Cloud Run, but the **SFTP extraction step currently requires manual/local execution** — see [Section 3.1](#31-known-limitation-sftp-execution) for details.
+
 ---
 
-## 2. Cloud Infrastructure & Engineering Practices
+## 3. Cloud Infrastructure & Engineering Practices
 
 The pipeline is containerized and designed for scalable cloud execution.
 
@@ -43,9 +68,17 @@ The pipeline is containerized and designed for scalable cloud execution.
 - **Idempotent Execution:** The pipeline is designed to be safely executed multiple times for the same logical date without duplicating downstream data, ensuring a reliable state in the data warehouse.
 - **Backfilling:** Custom CLI tools (`trigger_backfilling.py`) allow surgical historical reprocessing.
 
+### 3.1 Known limitation: SFTP execution
+
+The PostgreSQL-to-Gold flow runs fully automated on Cloud Run. The SFTP step (`src/extractors/sftp_extractor.py`), however, must be **triggered manually from a local environment**: the SFTP server (SFTPGo) is hosted on `localhost`, which Cloud Run can't reach — an infra limitation, not a code issue.
+
+Until SFTPGo is deployed somewhere network-accessible, run `python main.py` locally to pull the external file (`quality_control_day4.csv`) into Bronze. From there, transformation and BigQuery loading proceed the same way regardless of source.
+
+**Planned fix:** move SFTPGo to a public/VPC-reachable host so this step can run inside Cloud Run.
+
 ---
 
-## 3. Data Quality & Reliability
+## 4. Data Quality & Reliability
 
 Data is validated *before* reaching the analytical layers using a fail-fast approach.
 
@@ -57,7 +90,7 @@ Data is validated *before* reaching the analytical layers using a fail-fast appr
 
 ---
 
-## 4. Testing
+## 5. Testing
 
 The pipeline includes automated unit tests covering data cleaning functions, quality validations, and transformation logic, run via **Pytest** and integrated into the CI workflow (GitHub Actions) on every push and pull request.
 
@@ -73,7 +106,7 @@ pytest -v
 
 ---
 
-## 5. FAQ & Design Decisions
+## 6. FAQ & Design Decisions
 
 - **Why use Cloud Run Jobs instead of Cloud Functions?**
 
@@ -93,7 +126,7 @@ pytest -v
 
 ---
 
-## 6. Analytical Outputs (Gold Layer)
+## 7. Analytical Outputs (Gold Layer)
 
 The final layer provides curated analytical outputs designed to answer specific business questions, with tables ready for consumption in Looker Studio.
 
@@ -159,7 +192,7 @@ The `gold_plant_performance` table feeds a **Looker Studio** dashboard that cons
   
 ---
 
-## 7. Getting Started
+## 8. Getting Started
 
 ### Prerequisites
 
@@ -195,6 +228,7 @@ python main.py
 ```
 
 Runs the full flow: extraction (PostgreSQL + SFTP) → Silver transformation & validation → BigQuery load → Gold layer build.
+> When run locally, this command extracts from **both** PostgreSQL and SFTP. When deployed on Cloud Run, only the PostgreSQL-sourced tables and the Gold layer build execute automatically — the SFTP-sourced table (`quality_control`) must be extracted in a separate local run beforehand (see [Section 3.1](#31-known-limitation-sftp-execution)).
 
 ### Backfill & Tests
 
@@ -212,7 +246,7 @@ docker run --env-file .env industrial-maintenance-pipeline
 
 ---
 
-## 8. Project Structure
+## 9. Project Structure
 
 ```text
 industrial-maintenance-pipeline/
@@ -243,11 +277,6 @@ industrial-maintenance-pipeline/
 │       ├── production_yields/
 │       └── ...
 │
-├── docs/                              # Project diagrams and technical documentation
-│   ├── architecture.png
-│   ├── pipeline_flow.png
-│   ├── data_model.png
-│   └── ...
 │
 ├── sql/
 │   ├── plants.sql                     # SQL queries for extraction from PostgreSQL
@@ -300,4 +329,4 @@ industrial-maintenance-pipeline/
 │
 ├── .dockerignore                      # Files excluded from the Docker image build
 ├── .env.example                       # Environment variable template
-├── .gitignore                         # Temporary files, credentials, and
+└── .gitignore                         # Temporary files, credentials, and virtual enviroments
