@@ -16,13 +16,14 @@ This project simulates a **7-day data workflow for an industrial maintenance com
 ```text
                          7-DAY PIPELINE EXECUTION FLOW
 
-                         Days 1–3: PostgreSQL
-                                  │
-                          Days 4–7: + SFTP
-                                  ▼
-PostgreSQL / SFTP → Bronze → Transform + DQ → Silver → BigQuery Silver → Gold → Looker
-                     CSV        Pandas         Parquet        SQL
-                     GCS                        GCS
+                                        Days 4–7: SFTP
+                                       (Manual / Local)
+                                              │
+                                         IMPORT DATA
+                                              │
+                                              ▼
+INSERT / BULK INSERT ───→ PostgreSQL ───→  Bronze  ───→ Transform + DQ ───→  Silver  ───→  BigQuery ───→ Gold ───→ Looker
+     (Days 1–7)                           CSV | GCS         Pandas        Parquet | GCS               SQL
 
 • Orchestration: Cloud Scheduler · Cloud Run Jobs
 • Cloud: GCS · BigQuery · Artifact Registry · Secret Manager · IAM
@@ -36,7 +37,7 @@ The scenario demonstrates how an existing batch pipeline can incorporate a **new
 
 ## 2. Architecture & Data Flow
 
-<img width="1190" height="788" alt="Medallion architecture data flow diagram" src="https://github.com/user-attachments/assets/210ea8c5-1180-44e2-b0b3-49ef5f34d6e8" />
+<img width="1197" height="798" alt="Medallion architecture data flow diagram" src="https://github.com/user-attachments/assets/86aa229a-d1e1-4998-8f76-0dd58f23721b" />
 
 The pipeline follows a strict **Medallion Architecture**, decoupling extraction, transformation, and analytical modeling:
 
