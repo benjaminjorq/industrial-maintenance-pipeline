@@ -14,7 +14,8 @@ End-to-end data engineering pipeline for processing industrial production, maint
 This project simulates a **7-day data workflow for an industrial maintenance company**, centralizing operational data related to production, maintenance, and quality. Data is initially processed from PostgreSQL, while on **Day 4**, an external SFTP source is introduced to integrate third-party quality control data into the existing pipeline.
 
 ```text
-                         7-DAY PIPELINE EXECUTION FLOW
+                                7-DAY PIPELINE EXECUTION FLOW
+
 
                                         Days 4–7: SFTP
                                        (Manual / Local)
@@ -25,9 +26,10 @@ This project simulates a **7-day data workflow for an industrial maintenance com
 INSERT / BULK INSERT ───→ PostgreSQL ───→  Bronze  ───→ Transform + DQ ───→  Silver  ───→  BigQuery ───→ Gold ───→ Looker
      (Days 1–7)                           CSV | GCS         Pandas        Parquet | GCS                   SQL
 
+
 • Orchestration: Cloud Scheduler · Cloud Run Jobs
 • Cloud: GCS · BigQuery · Artifact Registry · Secret Manager · IAM
-• Quality & Ops: Data Quality · Pytest · GitHub Actions · Logging · Monitoring
+• Quality & Ops: Data Quality · Pytest · GitHub Actions (CI) · Logging · Monitoring
 • Strategy: Full Refresh · Medallion Architecture
 ```
 
@@ -45,7 +47,7 @@ The pipeline follows a strict **Medallion Architecture**, decoupling extraction,
 - **Transformation:** **Pandas-based transformations** perform schema normalization, data cleansing, type standardization, and data quality validation. Processed datasets are serialized as **Parquet** and stored in the Silver layer.
 - **Analytics:** **BigQuery SQL models** consume the Silver layer to build curated **Gold** datasets optimized for analytical workloads and reporting.
 
-> **Note on SFTP execution:** the PostgreSQL extraction and Gold layer build run fully automated on Cloud Run, but the **SFTP extraction step currently requires manual/local execution** — see [Section 3.1](#31-known-limitation-sftp-execution) for details.
+> **Tech Note on SFTP execution:** the PostgreSQL extraction and Gold layer build run fully automated on Cloud Run, but the **SFTP extraction step currently requires manual/local execution** — see [Section 3.1](#31-known-limitation-sftp-execution) for details.
 
 ---
 
@@ -65,7 +67,7 @@ The pipeline is containerized and designed for scalable cloud execution.
 
 - **Decoupled Logic:** Python handles ETL; SQL handles business KPIs.
 - **CI & Testing:** Automated testing with Pytest and GitHub Actions.
-- **Hybrid Ingestion:** Standardizes heterogeneous data sources, seamlessly unifying internal relational database streams (PostgreSQL) with remote external vendor files (SFTP) into a single processing engine.
+- **Hybrid Ingestion:** Standardizes heterogeneous data sources by integrating relational PostgreSQL data and external SFTP files into a common processing workflow.
 - **Idempotent Execution:** The pipeline is designed to be safely executed multiple times for the same logical date without duplicating downstream data, ensuring a reliable state in the data warehouse.
 - **Backfilling:** Custom CLI tools (`trigger_backfilling.py`) allow surgical historical reprocessing.
 
@@ -87,7 +89,6 @@ Data is validated *before* reaching the analytical layers using a fail-fast appr
 
 - **Schema & Constraints:** Ensures exact column matches, non-empty datasets, and uniqueness of primary keys.
 - **Business Rules:** Validates that metrics (costs, quantities) are positive and checks chronological consistency (e.g., `downtime.start_timestamp < downtime.end_timestamp`).
-- **Pipeline State:** If a critical validation fails, the specific table is dropped from the current run, but the overall pipeline gracefully continues with the remaining tables, flagging a final exit error for monitoring tools.
 
 ---
 
@@ -119,7 +120,7 @@ pytest -v
 
 - **Why implement a Full Refresh loading strategy?**
 
-  For datasets processing fewer than 100k records per run, a Full Refresh strategy (truncating and reloading the destination tables) is efficient, simple to maintain, and eliminates the risk of data duplication or state mismatch. Given the current data volume and workload characteristics, the additional complexity of incremental loading was not justified.
+  For datasets processing fewer than 100k records per run, a Full Refresh strategy (truncating and reloading the destination tables) is efficient, simple to maintain, and reduces the risk of data duplication and state mismatch. Given the current data volume and workload characteristics, the additional complexity of incremental loading was not justified.
 
 - **Why integrate an external SFTP server into the pipeline?**
 
@@ -330,4 +331,4 @@ industrial-maintenance-pipeline/
 │
 ├── .dockerignore                      # Files excluded from the Docker image build
 ├── .env.example                       # Environment variable template
-└── .gitignore                         # Temporary files, credentials, and virtual enviroments
+└── .gitignore                         # Temporary files, credentials, and virtual environments
