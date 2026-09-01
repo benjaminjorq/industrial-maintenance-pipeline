@@ -79,6 +79,26 @@ Until SFTPGo is deployed somewhere network-accessible, run `python main.py` loca
 
 **Planned fix:** move SFTPGo to a public/VPC-reachable host so this step can run inside Cloud Run.
 
+### 3.2 Monitoring & Alerting
+
+Cloud Run Job executions are monitored through **Google Cloud Monitoring alerting policies**, which trigger automatically when a failed job execution is detected. Notifications are routed to email, providing immediate visibility into pipeline failures without requiring manual checks in the Cloud Console.
+
+To validate the alerting workflow end-to-end, a controlled failure was introduced by renaming the `plant_name` column to `plant_name_update` in the source table (Supabase), intentionally causing a schema mismatch during pipeline processing:
+
+<img width="996" height="265" alt="Forced failure - renamed column plant_name to plant_name_update in Supabase" src="https://github.com/user-attachments/assets/3ba5aaf3-42c4-4bae-b3da-2a86724feb19" />
+
+*Intentional schema change in the `plants` table (Supabase) used to trigger a controlled pipeline failure.*
+
+The schema mismatch caused the Cloud Run Job execution to fail. Google Cloud Monitoring detected the failed execution, triggered the configured alerting policy, and sent an email notification:
+
+<img width="1024" height="653" alt="GCP Cloud Run job failure alert email" src="https://github.com/user-attachments/assets/488995b7-e7ce-4ca7-bfd6-6f38afc6f1d6" />
+
+*Email alert triggered by the failed Cloud Run Job execution, showing the monitored metric, job name, project, and a direct link to the incident.*
+
+- **Trigger:** `Cloud Run Job - Completed Executions` above a threshold of `0` with `result: failed`.
+- **Notification channel:** Email through Google Cloud Monitoring, with a direct **View Incident** link to the Cloud Console.
+- **Current scope:** Monitors Cloud Run Job execution failures and can be extended with additional operational metrics and alerting conditions.
+
 ---
 
 ## 4. Data Quality & Reliability
