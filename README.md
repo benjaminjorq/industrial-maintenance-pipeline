@@ -55,13 +55,14 @@ The pipeline follows a strict **Medallion Architecture**, decoupling extraction,
 
 The pipeline is containerized and designed for scalable cloud execution.
 
-| Service               | Purpose                                                   |
-| :--------------------- | :--------------------------------------------------------- |
-| **Cloud Run Jobs**    | Containerized batch ETL execution                         |
-| **Cloud Storage**     | Immutable Bronze and optimized Silver (Parquet) storage    |
-| **BigQuery**          | Analytical Data Warehouse and Gold layer materialization   |
-| **Artifact Registry** | Secure Docker image storage                                |
-| **Secret Manager**    | Environment and credential management                      |
+| Service               | Purpose                                                 |
+| :--------------------- | :------------------------------------------------------- |
+| **Cloud Run Jobs**    | Containerized batch ETL execution                       |
+| **Cloud Storage**     | Immutable Bronze and optimized Silver (Parquet) storage |
+| **BigQuery**          | Analytical Data Warehouse and Gold layer materialization |
+| **Artifact Registry** | Secure Docker image storage                             |
+| **Secret Manager**    | Environment and credential management                   |
+| **Cloud Monitoring**  | Job execution monitoring and failure alerting           |
 
 **Core Engineering Practices:**
 
