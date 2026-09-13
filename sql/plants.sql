@@ -1,5 +1,3 @@
--- Uso de SELECT * justificado por la estructura actual de la fuente, sin impacto relevante en rendimiento.
--- A medida que los datos escalen, se recomienda seleccionar explícitamente las columnas requeridas.
+SELECT plant_id, plant_name, region, is_active
 
-SELECT *
 FROM public.plants

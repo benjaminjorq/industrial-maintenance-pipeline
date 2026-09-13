@@ -1,5 +1,3 @@
--- Uso de SELECT * justificado por la estructura actual de la fuente, sin impacto relevante en rendimiento.
--- A medida que los datos escalen, se recomienda seleccionar explícitamente las columnas requeridas.
+SELECT bom_id, product_id, material_id, required_quantity
 
-SELECT *
 FROM public.bill_of_materials

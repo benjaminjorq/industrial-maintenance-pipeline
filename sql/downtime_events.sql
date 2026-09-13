@@ -1,5 +1,3 @@
--- Uso de SELECT * justificado por la estructura actual de la fuente, sin impacto relevante en rendimiento.
--- A medida que los datos escalen, se recomienda seleccionar explícitamente las columnas requeridas.
+SELECT event_id, machine_id, start_timestamp, reason
 
-SELECT * 
 FROM public.downtime_events
