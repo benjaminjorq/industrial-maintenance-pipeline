@@ -1,5 +1,3 @@
--- Uso de SELECT * justificado por la estructura actual de la fuente, sin impacto relevante en rendimiento.
--- A medida que los datos escalen, se recomienda seleccionar explícitamente las columnas requeridas.
+SELECT category_id, category_name
 
-SELECT *
 FROM public.product_categories

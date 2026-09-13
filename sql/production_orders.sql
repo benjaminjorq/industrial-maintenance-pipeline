@@ -1,5 +1,3 @@
--- Uso de SELECT * justificado por la estructura actual de la fuente, sin impacto relevante en rendimiento.
--- A medida que los datos escalen, se recomienda seleccionar explícitamente las columnas requeridas.
+SELECT order_id, plant_id, status, planned_start_date, actual_start_date
 
-SELECT * 
 FROM public.production_orders
