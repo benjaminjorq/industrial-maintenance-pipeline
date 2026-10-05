@@ -7,6 +7,7 @@ import pandas as pd
 from src.database.connection import get_db_connection
 from src.config.settings import GCS_BUCKET_BRONZE
 from utils.gcs_uploader import upload_file
+from utils.generate_metadata import save_postgres_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -33,37 +34,6 @@ def save_csv(df, output_dir, filename):
     df.to_csv(csv_path, index=False, encoding="utf-8")
     
     return csv_path
-
-def save_metadata(table_name: str, csv_path: Path, row_count: int, generated_at: datetime, query_file: str) -> Path:
-    """Genera un archivo JSON con la información de auditoría de la extracción.
-
-    Args:
-        table_name: Nombre de la tabla extraída.
-        csv_path: Ruta del archivo CSV generado.
-        row_count: Número de registros extraídos.
-        generated_at: Fecha y hora de la extracción.
-        query_file: Archivo SQL utilizado.
-
-    Returns:
-        Ruta del archivo de metadatos generado.
-    """
-
-    metadata = {
-        "source": "postgresql",
-        "table": table_name,
-        "file_name": csv_path.name,
-        "rows": row_count,
-        "file_size_bytes": csv_path.stat().st_size,
-        "generated_at": generated_at.isoformat(),
-        "query_file": query_file,
-    }
-    
-    metadata_path = csv_path.parent / "metadata.json"
-    
-    with open(metadata_path, "w", encoding="utf-8") as file:
-        json.dump(metadata, file, indent=4)
-        
-    return metadata_path
 
 def run(table_name: str, query: str, bronze_path: Path, ingestion_date: str, query_file: str = "unknown") -> None:
     """Ejecuta el proceso completo de extracción de una tabla hacia Bronze.
@@ -102,7 +72,7 @@ def run(table_name: str, query: str, bronze_path: Path, ingestion_date: str, que
             return
             
         csv_path = save_csv(df, output_dir, filename)
-        metadata_path = save_metadata(table_name, csv_path, len(df), now, query_file)
+        metadata_path = save_postgres_metadata(table_name, csv_path, len(df), now, query_file)
         
         logger.info("Respaldando archivos en Cloud Storage (Bronze)")
         
