@@ -4,6 +4,7 @@ import posixpath
 import paramiko
 import json
 from datetime import datetime, timezone
+from utils.generate_metadata import save_sftp_metadata
 
 from src.config.settings import (
     SFTP_HOST, SFTP_PORT, SFTP_USER, 
@@ -14,24 +15,8 @@ from src.config.settings import GCS_BUCKET_BRONZE
 
 logger = logging.getLogger(__name__)
 
-def save_metadata(table_name: str, file_path: Path, generated_at: datetime, remote_filename: str) -> Path:
-    """Genera un archivo JSON con la metadata de la extracción SFTP."""
-    metadata = {
-        "source": "sftp",
-        "table": table_name,
-        "file_name": file_path.name,
-        "file_size_bytes": file_path.stat().st_size,
-        "generated_at": generated_at.isoformat(),
-        "remote_source_file": remote_filename
-    }
+def run(table_name, bronze_path, ingestion_date, remote_filename):
     
-    metadata_path = file_path.parent / "metadata.json"
-    with open(metadata_path, "w", encoding="utf-8") as file:
-        json.dump(metadata, file, indent=4)
-        
-    return metadata_path
-
-def run(table_name: str, bronze_path: Path, ingestion_date: str, remote_filename: str) -> None:
     logger.info("Iniciando extracción SFTP para la tabla externa: '%s'", table_name)
     
     output_dir = bronze_path / table_name / f"ingestion_date={ingestion_date}"
@@ -71,7 +56,7 @@ def run(table_name: str, bronze_path: Path, ingestion_date: str, remote_filename
         logger.info("Archivo descargado exitosamente en: %s", local_filepath)
 
         now = datetime.now(timezone.utc)
-        metadata_path = save_metadata(table_name, local_filepath, now, remote_filename)
+        metadata_path = save_sftp_metadata(table_name, local_filepath, now, remote_filename)
         
         logger.info("Respaldando archivo SFTP y metadatos en Cloud Storage (Bronze)")
 
