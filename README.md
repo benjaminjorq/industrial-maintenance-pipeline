@@ -238,7 +238,7 @@ pip install -r requirements.txt
 
 ### Configuration
 
-Create a `.env` file in the project root with your database, GCP, and SFTP credentials (see `.env.example` for the required variables).
+Create a `.env` file in the project root with your database, GCP, and SFTP credentials 
 
 > Make sure `known_hosts` is present in the project root — it's required for the SFTP connection (`RejectPolicy`).
 
@@ -285,7 +285,8 @@ industrial-maintenance-pipeline/
 │   ├── bronze/                        # Raw extracted data without transformations (CSV)
 │   │   ├── plants/
 │   │   │   └── ingestion_date=YYYY-MM-DD/
-│   │   │       └── plants_YYYY-MM-DD.csv
+│   │   │       ├── plants_YYYY-MM-DD.csv
+│   │   │       └── metadata.json
 │   │   ├── machines/
 │   │   ├── production_orders/
 │   │   ├── production_yields/
@@ -348,8 +349,13 @@ industrial-maintenance-pipeline/
 │   └── ...
 │
 ├── utils/
+│   ├── generate_metadata.py           # Generates JSON metadata for extracted data
 │   └── gcs_uploader.py                # Utility functions for Google Cloud Storage
 │
+├── main.py                            # Main entry point that orchestrates the ETL pipeline
+├── Dockerfile                         # Defines the Docker image for the pipeline
+├── known_hosts                        # Trusted host keys for SFTP connections
 ├── .dockerignore                      # Files excluded from the Docker image build
-├── .env.example                       # Environment variable template
-└── .gitignore                         # Temporary files, credentials, and virtual environments
+├── .gitignore                         # Temporary files, credentials, and virtual environments
+├── requirements.txt                   # Python dependencies
+└── README.md                          # Project documentation
